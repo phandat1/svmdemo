@@ -3,135 +3,123 @@
 #include <cmath>
 #include <random>
 #include <graphics.h>
-#include <algorithm>
-#include <bits/stdc++.h>
+
 using namespace std;
 
 // cau truc luu tru cau truc diem du lieu gom dac trung va nhan.
+
 struct DataPoint {
     vector<double> features; // cac dac trung cua du lieu.
-    int label; // nhan cua diem du lieu 1 or -1.
+    int label;// nhan cua diem du lieu 1 or -1.
 };
 
 // ham tinh tich vo huong cua hai vector.
+
 double dotProduct(const vector<double>& v1, const vector<double>& v2) {
     double result = 0.0;
-    for (size_t i = 0; i < v1.size(); ++i) {
+    for (int i = 0; i < v1.size(); ++i) {
         result += v1[i] * v2[i];
     }
     return result;
 }
 
 // ham xao tron du lieu ngau nhien de tranh bias trong qua trinh huan luyen.
-void shuffleData(vector<DataPoint>& data) {
+
+void initializeWeights(vector<double>& w, int featureSize) {
     random_device rd; // thiet bi tao so ngau nhien.
-    mt19937 g(rd()); // may tao so ngau nhien.
-    shuffle(data.begin(), data.end(), g); // xao tron du lieu.
+    mt19937 gen(rd()); // may tao so ngau nhien.
+    uniform_real_distribution<> dis(-0.1, 0.1);
+    w.clear();
+    
+    //Duyet qua tung phan tu cua vector va gan moi phan tu bang mot giá tri ngau nhien duoc tao ra.
+    
+    for (int i = 0; i < featureSize; ++i) {
+        w.push_back(dis(gen));
+    }
 }
 
 // ham huan luyen mo hinh SVM.
-vector<double> trainSVM(vector<DataPoint>& data, double learningRate = 0.01, int epochs = 1000, double lambda = 0.01) {
+
+vector<double> trainSVM(vector<DataPoint>& data, double learningRate = 0.01, int epochs = 10000, double lambda = 0.01) {
     if (data.empty()) return {};
 
     int featureSize = data[0].features.size(); // kich thuoc cua dac trung.
-    vector<double> w(featureSize, 0.0); // khoi tao vector trong so W.
-    double b = 0.0; // khoi tao trong so b.
+    vector<double> w(featureSize, 0.0); //khoi tao vector trong so W.
+    double b = 0.0;// khoi tao trong so b.
 
-    // khoi tao trong so w ngau nhien.
-    random_device rd;
-    mt19937 gen(rd());
-    uniform_real_distribution<> dis(-0.1, 0.1);
-    for (double& weight : w) {
-        weight = dis(gen);
-    }
-
+    initializeWeights(w, featureSize); // khoi tao trong so w ngau nhien.
+    
     //vong lap huan luyen.
+    
     for (int epoch = 0; epoch < epochs; ++epoch) {
-        shuffleData(data); // xao tron du lieu truoc moi epoch.
-        int correctCount = 0;
         for (auto& point : data) {
-            double margin = point.label * (dotProduct(w, point.features) + b);
-            if (margin < 1) {
-                for (size_t i = 0; i < featureSize; ++i) {
-                    w[i] -= learningRate * (lambda * w[i] - point.label * point.features[i]);
+            if (point.label * (dotProduct(w, point.features) + b) < 1) {
+                for (int i = 0; i < featureSize; ++i) {
+                    w[i] -= learningRate * (lambda * w[i] - point.label * point.features[i]); 
                 }
                 b -= learningRate * (-point.label);
-            } else {
-                correctCount++;
             }
         }
-        learningRate *= 0.99; //giam toc do sau moi epoch.
-
-        // tinh va in do chinh xac sau moi epoch.
-        double accuracy = static_cast<double>(correctCount) / static_cast<double>(data.size());
-        cout << "Epoch " << (epoch + 1) << " Accuracy: " << (accuracy * 100.0) << "%" << endl;
+        learningRate *= 0.99; // xao tron du lieu truoc moi epoch.
     }
     w.push_back(b); // them sai so b vao cuoi vector trong so w.
-    return w;
+    return w; 
 }
 
-// Ham ve do thi cac diem du lieu va sieu mat phang.
 void drawGraph(const vector<DataPoint>& data, const vector<double>& w) {
     int gd = DETECT, gm;
-    initgraph(&gd, &gm, NULL); // khoi tao do hoa.
+    initgraph(&gd, &gm, NULL); 
 
-    // tim gia tri lon nhat va nho nhat cua cac dac trung de ve do thi.
-    double maxX = data[0].features[0];
-    double minX = data[0].features[0];
-    double maxY = data[0].features[1];
-    double minY = data[0].features[1];
     for (const auto& point : data) {
-        if (point.features[0] > maxX) maxX = point.features[0];
-        if (point.features[0] < minX) minX = point.features[0];
-        if (point.features[1] > maxY) maxY = point.features[1];
-        if (point.features[1] < minY) minY = point.features[1];
+        int x = 200 + 30 * point.features[0]; 
+        int y = 200 - 30 * point.features[1]; 
+        if (point.label == 1)
+            setcolor(2); 
+        else
+            setcolor(4);
+        circle(x, y, 5); 
+        floodfill(x, y, getcolor());
     }
 
-    // Tinh ti le chuyen doi toa do thuc te sang toa do do hoa.
-    double xScale = (getmaxx() - 200) / (maxX - minX);
-    double yScale = (getmaxy() - 200) / (maxY - minY);
-
-    // ve cac diem du lieu.
-    for (const auto& point : data) {
-        int x = static_cast<int>(200 + (point.features[0] - minX) * xScale);
-        int y = static_cast<int>(200 + (maxY - point.features[1]) * yScale);
-        int color = point.label == 1 ? GREEN : RED;
-        setcolor(color);
-        circle(x, y, 5);
-        floodfill(x, y, color);
-    }
-
-    // ve sieu mat phang.
     if (w.size() >= 3) {
-        setcolor(WHITE);
-        int x1 = 0;
-        int y1 = static_cast<int>(200 + (maxY - ((-w.back() - w[0] * minX) / w[1])) * yScale);
-        int x2 = getmaxx();
-        int y2 = static_cast<int>(200 + (maxY - ((-w.back() - w[0] * maxX) / w[1])) * yScale);
-        line(x1, y1, x2, y2);
+        setcolor(15); 
+        for (int x = 0; x < getmaxx(); x++) {
+            double x1 = (x - 200) / 30.0;
+            double y1 = (-w[2] - w[0] * x1) / w[1];
+            int vy = 200 - 30 * y1;
+            if (vy >= 0 && vy <= getmaxy()) {
+                putpixel(x, vy, WHITE);
+            }
+        }
     }
 
-    getch(); // doi nguoi dung nhap.
-    closegraph(); // dong cua so do hoa.
+    getch(); 
+    closegraph(); 
 }
 
 int main() {
-    // du lieu huan luyen.
     vector<DataPoint> data = {
-        {{2, 3}, 1}, {{4, 1}, -1}, {{4, 2}, 1}, {{2, 3}, -1}, {{1, 8}, -1}
+        {{3, 4}, 1},{{2.5,5},1},{{1.5,3.5},1},{{2.5,6},1},{{3.5,5},1},{{4,6},1}, {{4, 5}, 1}, {{5, 3}, -1},
+	{{3, 1}, -1},{{3.5, 1}, -1}, {{3.5, 2.5}, -1}, {{5.5, 2}, -1}, {{4.5,2.5},-1},{{4, 2.5}, -1},{{5, 2.3}, -1}
     };
 
-    // huan luyen mo hinh va lay cac tham so.
     vector<double> svmParameters = trainSVM(data);
-    
-    // in ra cac tham so cua mo hinh.
-    cout << "Model parameters:" << endl;
-    for (size_t i = 0; i < svmParameters.size() - 1; ++i) {
+
+    cout << "Model parameters: ";
+    for (int i = 0; i < svmParameters.size() - 1; ++i) {
         cout << "w" << i << " = " << svmParameters[i] << ", ";
     }
     cout << "b = " << svmParameters.back() << endl;
+    cout << "Final SVM Hyperplane: y = ";
+    cout << svmParameters[0] << "*x" << 1 ;
+    for (int i = 1; i < svmParameters.size() - 1; ++i){
+    	if(svmParameters[i]>0)
+        cout << " + " <<svmParameters[i]<< "*x" << i+1 ;
+        else cout<<" - "<<abs(svmParameters[i])<<"*x"<<i+1;
+        
+    }
+    cout << svmParameters.back() << endl;
 
-    // ve cac diem du lieu va sieu mat phang.
     drawGraph(data, svmParameters);
 
     return 0;
