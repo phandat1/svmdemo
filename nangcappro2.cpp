@@ -1,7 +1,4 @@
-#include <iostream>
-#include <vector>
-#include <cmath>
-#include <random>
+#include <bits/stdc++.h>
 #include <graphics.h>
 
 using namespace std;
@@ -96,13 +93,41 @@ void drawGraph(const vector<DataPoint>& data, const vector<double>& w) {
     getch(); 
     closegraph(); 
 }
+vector<DataPoint> readDataFromFile(const string& filename) {
+    ifstream inFile(filename);
+    vector<DataPoint> data;
+
+    if (!inFile) {
+        cerr << "Unable to open file: " << filename << endl;
+        exit(1);
+    }
+
+    int numDataPoints;
+    if (!(inFile >> numDataPoints)) {
+        cerr << "Error reading number of data points" << endl;
+        exit(1);
+    }
+
+    for (int i = 0; i < numDataPoints; ++i) {
+        DataPoint dp;
+        double x1, x2;
+        int label;
+        if (!(inFile >> x1 >> x2 >> label)) {
+            cerr << "Error reading data point " << i + 1 << endl;
+            exit(1);
+        }
+        dp.features.push_back(x1);
+        dp.features.push_back(x2);
+        dp.label = label;
+        data.push_back(dp);
+    }
+    inFile.close();
+    return data;
+}
 
 int main() {
-    vector<DataPoint> data = {
-        {{3, 4}, 1},{{2.5,5},1},{{1.5,3.5},1},{{2.5,6},1},{{3.5,5},1},{{4,6},1}, {{4, 5}, 1}, {{5, 3}, -1},
-	{{3, 1}, -1},{{3.5, 1}, -1}, {{3.5, 2.5}, -1}, {{5.5, 2}, -1}, {{4.5,2.5},-1},{{4, 2.5}, -1},{{5, 2.3}, -1}
-    };
-
+     string filename = "data.txt";
+    vector<DataPoint> data = readDataFromFile(filename);
     vector<double> svmParameters = trainSVM(data);
 
     cout << "Model parameters: ";
