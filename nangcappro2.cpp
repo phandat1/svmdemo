@@ -124,9 +124,37 @@ vector<DataPoint> readDataFromFile(const string& filename) {
     inFile.close();
     return data;
 }
-
+void giaodien(){ 
+    cout << "                        ____________________________________________________________________________\n";
+    cout << "                       |                                                                            |\n";
+    cout << "                       |                          TRUONG DAI HOC BACH KHOA                          |\n";
+	cout << "                       |                          KHOA CONG NGHE THONG TIN                          |\n";                             
+    cout << "                       |                                                                            |\n";
+    cout << "                       |                                                                            |\n";
+    cout << "                       |                          DO AN LAP TRINH TINH TOAN                         |\n";
+    cout << "                       |                                                                            |\n";
+    cout << "                       |                  QUA TRINH TINH TOAN VA SU DUNG THUAT TOAN                 |\n";
+    cout << "                       |                         SUPPORT VECTOR MACHINE(SVM)                        |\n";
+    cout << "                       |                                                                            |\n";
+    cout << "                       |                            GIAO VIEN HUONG DAN                             |\n";
+    cout << "                       |                                                                            |\n";
+    cout << "                       |                          PGS.TS. Nguyen Tan Khoi                           |\n";
+    cout << "                       |                                                                            |\n";
+    cout << "                       |                                                                            |\n";
+    cout << "                       |                            SINH VIEN THUC HIEN                             |\n";
+    cout << "                       |                                                                            |\n";
+    cout << "                       |        1) Phan Phuoc Dat.......................... MSV: 102230339          |\n";
+    cout << "                       |        2) Dang Hoang Huy.......................... MSV: 102230349          |\n";
+    cout << "                       |                                                                            |\n";
+    cout << "                       |                                    Nhom 26                                 |\n";
+    cout << "                       |____________________________________________________________________________|\n\n";                      
+}
 int main() {
-     string filename = "data.txt";
+	 giaodien();
+     string filename ;
+     cout<<"nhap tep du diem du lieu can huan luyen : ";
+     cin>>filename;
+     cout<<"\n";
     vector<DataPoint> data = readDataFromFile(filename);
     vector<double> svmParameters = trainSVM(data);
 
