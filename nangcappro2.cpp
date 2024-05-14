@@ -128,7 +128,7 @@ void giaodien(){
     cout << "                        ____________________________________________________________________________\n";
     cout << "                       |                                                                            |\n";
     cout << "                       |                          TRUONG DAI HOC BACH KHOA                          |\n";
-	cout << "                       |                          KHOA CONG NGHE THONG TIN                          |\n";                             
+	cout << "                   |                          KHOA CONG NGHE THONG TIN                          |\n";                             
     cout << "                       |                                                                            |\n";
     cout << "                       |                                                                            |\n";
     cout << "                       |                          DO AN LAP TRINH TINH TOAN                         |\n";
